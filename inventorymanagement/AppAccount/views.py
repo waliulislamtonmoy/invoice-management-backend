@@ -8,7 +8,10 @@ from .models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from AppAccount.serializer import UserRegisterSerializer
+from AppAccount.serializer import (UserRegisterSerializer,
+                                   UserProfileViewSerializer,
+                                   UserProfileUpdateViewSerializer
+                                   )
 from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 
 # from django.contrib.auth import get_user_model
@@ -107,4 +110,55 @@ class ResetPasswordView(APIView):
         
         print(user)
         return Response({"status":"success","message":"password reset successfull"},status=status.HTTP_200_OK)
+        
+class UserProfileView(APIView):
+    def get(self, request):
+        try: 
+            user = request.user
+            user_data = UserProfileViewSerializer(user).data
+            return Response({
+                "status": "success",
+                "message": "request successful",
+                "data": user_data
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            if not request.user or not request.user.is_authenticated:
+                return Response({
+                    "status": "failed",
+                    "message": "user must be authenticated",
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Handle other exceptions
+            return Response({
+                "status": "error",
+                "message": f"An error occurred: {str(e)}",
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            
+class UserProfileUpdateView(APIView):
+    permission_classes=(permissions.IsAuthenticated,)
+    
+    def post(self,request):
+            user=request.user 
+            serializer=UserProfileUpdateViewSerializer(user,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "status":"success",
+                    "message":"profile update successfull"
+                },status=status.HTTP_200_OK)
+            
+            return Response({
+                "status": "error",
+                "message": serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        
+            
+       
+        
+        
+        
+            
         

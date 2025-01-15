@@ -26,6 +26,40 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user    
     
-      
+class UserProfileViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User 
+        fields=[
+            "id",
+            "firstName",
+            "lastName",
+            "email",
+            "mobile",
+            "created_at",
+            "updated_at"
+        ]
+    
+    
+class UserProfileUpdateViewSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=User 
+        fields=[
+            "firstName",
+            "lastName",
+            "email",
+            "password",
+            "mobile",
+        ]
+        extra_kwargs={
+            'email':{
+                "read_only":True
+            }
+        }
+    def create(self,validated_data):
+        user=User.objects.create_user(**validated_data)
+        user.save()
+        return user 
+     
         
 
